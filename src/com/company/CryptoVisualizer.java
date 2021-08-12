@@ -37,9 +37,8 @@ public class CryptoVisualizer {
     public static SwingWrapper<XYChart> wrapped;
 
     public static void main(String[] args) {
-        for( int i = 0; i < timeunits.length; i++ ){
+        for( int i = 0; i < timeunits.length; i++ )
             timePeriodToUnitsPoints.put( timeperiods[i], new StringPair(timeunits[i], pointsToPoll[i]));
-        }
         JFrame frame = new JFrame();
         frame.setLayout( new BorderLayout() );
         chart = new XYChartBuilder().width( 1000 ).height( 800 ).title("CryptoTracker").
@@ -87,7 +86,7 @@ public class CryptoVisualizer {
     }
 
     /**
-     * This method clears any series whihc currently exists on the XYChart.
+     * This method clears any series which currently exists on the XYChart.
      * @param chart -> chart to clear.
      */
     public static void clearChart( XYChart chart ){
@@ -113,7 +112,7 @@ public class CryptoVisualizer {
         String points = timePeriodToUnitsPoints.get(period).points;
         URL url = new URL("https://min-api.cryptocompare.com/data/index/histo/underlying/"
                 + timeunit + "?market=CCMVDA&base=" + coin + "&quote=USD&limit=" + points
-                + "&api_key=YourCryptoCompareAPIKeyGoesHere");
+                + "&api_key=YourApiKeyGoesHere");
 
         URLConnection connection = url.openConnection();
         BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
@@ -133,10 +132,60 @@ public class CryptoVisualizer {
         url = new URL( "https://min-api.cryptocompare.com/data/price?fsym=" + coin + "&tsyms=USD" );
         addTodaysPrice( url, parse, timestamp, price );
 
+        //get high and low here
+        DoubleIndexPair max = getMaxFromList( price );
+        DoubleIndexPair min = getMinFromList( price );
+
         clearChart( chart );
         chart.setTitle( period + " price of: " + coin );
         chart.addSeries(coin + " Price", timestamp, price );
+        displayMaxPrice( max, timestamp.get( max.index ) );
+        displayMinPrice( min, timestamp.get( min.index ) );
         wrapped.repaintChart();
+    }
+
+    public static DoubleIndexPair getMaxFromList( LinkedList<Double> list ){
+        double max = 0; int index = 0; int count = 0;
+        for( double i: list ){
+            if( max < i ) {
+                max = i;
+                index = count;
+            }
+            count++;
+        }
+
+        DoubleIndexPair pair = new DoubleIndexPair( max, index );
+        return pair;
+    }
+
+    public static DoubleIndexPair getMinFromList( LinkedList<Double> list ){
+        double min = Double.MAX_VALUE; int index = 0; int count = 0;
+        for( double i: list ){
+            if( min > i ) {
+                min = i;
+                index = count;
+            }
+            count++;
+        }
+
+        DoubleIndexPair pair = new DoubleIndexPair( min, index );
+        return pair;
+    }
+
+    public static void displayMaxPrice( DoubleIndexPair pair, Date stamp ){
+        LinkedList<Double> maxPrice = new LinkedList<>();
+        LinkedList<Date> timestamps = new LinkedList<>();
+        maxPrice.add( pair.value );
+        timestamps.add( stamp );
+        chart.addSeries("Max Price For Period: " + pair.value, timestamps, maxPrice );
+    }
+
+    public static void displayMinPrice( DoubleIndexPair pair, Date stamp  ){
+        LinkedList<Double> minPrice = new LinkedList<>();
+        LinkedList<Date> timestamps = new LinkedList<>();
+        minPrice.add( pair.value );
+        timestamps.add( stamp );
+        chart.addSeries("Min Price For Period: " + pair.value, timestamps, minPrice );
     }
 
     /**
@@ -194,7 +243,6 @@ public class CryptoVisualizer {
         public CoinListener( String coin ){
             this.coin = coin;
         }
-
         @Override public void actionPerformed(ActionEvent e) { searchCoin.setText( this.coin ); }
     }
 
@@ -207,7 +255,6 @@ public class CryptoVisualizer {
         public TimeListener( String period ){
             this.period = period;
         }
-
         @Override public void actionPerformed(ActionEvent e) { searchTime.setText( this.period ); }
     }
 
@@ -219,6 +266,14 @@ public class CryptoVisualizer {
 
         private StringPair( String u, String p ){
             this.unit = u; this.points = p;
+        }
+    }
+
+    private static class DoubleIndexPair{
+        double value; int index;
+        public DoubleIndexPair( double val, int index ){
+            this.value = val;
+            this.index = index;
         }
     }
 }
