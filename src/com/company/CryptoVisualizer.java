@@ -37,6 +37,9 @@ public class CryptoVisualizer {
     public static XYChart chart;
     public static SwingWrapper<XYChart> wrapped;
 
+    /**
+     * The main method which start the cryptovisualizer.
+     */
     public static void main(String[] args) {
         for( int i = 0; i < timeunits.length; i++ )
             timePeriodToUnitsPoints.put( timeperiods[i], new StringPair(timeunits[i], pointsToPoll[i]));
@@ -126,8 +129,12 @@ public class CryptoVisualizer {
         for( int i = 0; i < jArray.size(); i++ ){
             jObject = (JSONObject) jArray.get(i);
             Date date = new Date( new Timestamp( (Long) jObject.get("time") * 1000 ).getTime() );
-            timestamp.addLast( date );
-            price.addLast( doubleValue(jObject.get("open")) );
+
+            double tryDouble = doubleValue(jObject.get("open"));
+            if( tryDouble != 0 && tryDouble != -1.0 ){ //0 = data not available, -1.0 means error in json data
+                timestamp.addLast( date );
+                price.addLast( tryDouble );
+            }
         }
 
         url = new URL( "https://min-api.cryptocompare.com/data/price?fsym=" + coin + "&tsyms=USD" );
@@ -140,14 +147,20 @@ public class CryptoVisualizer {
         clearChart( chart );
         chart.setTitle( period + " price of: " + coin );
         chart.addSeries(coin + " Price", timestamp, price );
-        displayMaxPrice( max, timestamp.get( max.index ) );
-        displayMinPrice( min, timestamp.get( min.index ) );
+
+        displayMaxPrice( max, timestamp );
+        displayMinPrice( min, timestamp );
+
         displayOpenPrice( price.getFirst(), timestamp.getFirst() );
         displayClosePrice( price.getLast(), timestamp.getLast() );
         displayPercentChange(price.getFirst(), price.getLast(), timestamp.getFirst(), timestamp.getLast() );
         wrapped.repaintChart();
     }
 
+    /**
+     * This method return the maximum from a linked list
+     * @return -> A Pair Containing the max double value and its index.
+     */
     public static DoubleIndexPair getMaxFromList( LinkedList<Double> list ){
         double max = 0; int index = 0; int count = 0;
         for( double i: list ){
@@ -162,6 +175,10 @@ public class CryptoVisualizer {
         return pair;
     }
 
+    /**
+     * This method return the minimum from a linked list
+     * @return -> A Pair Containing the min double value and its index.
+     */
     public static DoubleIndexPair getMinFromList( LinkedList<Double> list ){
         double min = Double.MAX_VALUE; int index = 0; int count = 0;
         for( double i: list ){
@@ -176,22 +193,63 @@ public class CryptoVisualizer {
         return pair;
     }
 
-    public static void displayMaxPrice( DoubleIndexPair pair, Date stamp ){
+    /**
+     * This method creates a small line (8% of chart) on the maximum price on the chart,
+     * as well as displaying it on the side
+     * @param pair -> The maximum value/index pair
+     * @param stamps -> index of all read timestamps
+     */
+    public static void displayMaxPrice( DoubleIndexPair pair, LinkedList<Date> stamps ){
         LinkedList<Double> maxPrice = new LinkedList<>();
         LinkedList<Date> timestamps = new LinkedList<>();
         maxPrice.add( pair.value );
-        timestamps.add( stamp );
+        timestamps.add( stamps.get(pair.index) );
+        int visualSpacing = (int) (( double ) stamps.size() / 25.0);
+
+        if( pair.index-visualSpacing >= 0 ) {
+            maxPrice.add( pair.value );
+            timestamps.add( stamps.get(pair.index-visualSpacing) );
+        }
+
+        if( pair.index+visualSpacing < stamps.size() ){
+            maxPrice.add(pair.value);
+            timestamps.add( stamps.get(pair.index+visualSpacing));
+        }
+
         chart.addSeries("Max Price For Period: " + pair.value, timestamps, maxPrice );
     }
 
-    public static void displayMinPrice( DoubleIndexPair pair, Date stamp  ){
+    /**
+     * This method creates a small line (8% of chart) on the minimum price on the chart,
+     * as well as displaying it on the side
+     * @param pair -> The minimum value/index pair
+     * @param stamps -> index of all read timestamps
+     */
+    public static void displayMinPrice( DoubleIndexPair pair, LinkedList<Date> stamps ){
         LinkedList<Double> minPrice = new LinkedList<>();
         LinkedList<Date> timestamps = new LinkedList<>();
         minPrice.add( pair.value );
-        timestamps.add( stamp );
+        timestamps.add( stamps.get(pair.index) );
+        int visualSpacing = (int) (( double ) stamps.size() / 25.0);
+
+        if( pair.index-visualSpacing >= 0 ) {
+            minPrice.add( pair.value );
+            timestamps.add( stamps.get(pair.index-visualSpacing) );
+        }
+
+        if( pair.index+visualSpacing < stamps.size() ){
+            minPrice.add(pair.value);
+            timestamps.add( stamps.get(pair.index+visualSpacing));
+        }
+
         chart.addSeries("Min Price For Period: " + pair.value, timestamps, minPrice );
     }
 
+    /**
+     * This creates a dot on the chart defining the open price, and displays it on the side.
+     * @param open -> the open price
+     * @param stamp -> the open timestamp
+     */
     public static void displayOpenPrice( double open, Date stamp  ){
         LinkedList<Double> openPrice = new LinkedList<>();
         LinkedList<Date> timestamps = new LinkedList<>();
@@ -200,6 +258,11 @@ public class CryptoVisualizer {
         chart.addSeries("Open Price For Period: " + open, timestamps, openPrice );
     }
 
+    /**
+     * This creates a dot on the chart defining the close price, and displays it on the side.
+     * @param close -> the close price
+     * @param stamp -> the close timestamp
+     */
     public static void displayClosePrice( double close, Date stamp  ){
         LinkedList<Double> closePrice = new LinkedList<>();
         LinkedList<Date> timestamps = new LinkedList<>();
@@ -208,6 +271,13 @@ public class CryptoVisualizer {
         chart.addSeries("Close Price For Period: " + close, timestamps, closePrice );
     }
 
+    /**
+     * This creates a line on the graph and a text on the side displaying the percentage change of this period
+     * @param open -> the open price
+     * @param close -> the close price
+     * @param openStamp -> open timestamp
+     * @param closeStamp -> close timestamp
+     */
     public static void displayPercentChange( double open, double close, Date openStamp, Date closeStamp  ){
         LinkedList<Double> edgePrice = new LinkedList<>();
         LinkedList<Date> timestamps = new LinkedList<>();
@@ -301,6 +371,9 @@ public class CryptoVisualizer {
         }
     }
 
+    /**
+     * Class defined for mapping a maximum/minimum double value to its index in a list/array
+     */
     private static class DoubleIndexPair{
         double value; int index;
         public DoubleIndexPair( double val, int index ){
