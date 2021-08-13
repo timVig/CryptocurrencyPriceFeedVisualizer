@@ -43,12 +43,12 @@ public class CryptoVisualizer {
     public static void main(String[] args) {
         for( int i = 0; i < timeunits.length; i++ )
             timePeriodToUnitsPoints.put( timeperiods[i], new StringPair(timeunits[i], pointsToPoll[i]));
-        JFrame frame = new JFrame();
-        frame.setLayout( new BorderLayout() );
         chart = new XYChartBuilder().width( 1000 ).height( 800 ).title("CryptoTracker").
                 xAxisTitle("Date").yAxisTitle("Price").build();
         wrapped = new SwingWrapper<>(chart);
-        frame.setSize( chart.getWidth() + 75, chart.getHeight() + 75 );
+        JFrame frame = wrapped.displayChart();
+        frame.setLayout( new BorderLayout() );
+        frame.setSize( chart.getWidth(), chart.getHeight() + 75 );
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         startUI( frame );
         frame.setVisible( true );
@@ -59,9 +59,6 @@ public class CryptoVisualizer {
      * @param frame -> the frame to create UI on.
      */
     public static void startUI( JFrame frame ){
-        JFrame display = wrapped.displayChart();
-        display.setVisible(false);
-        XChartPanel<XYChart> xy1 = wrapped.getXChartPanel();
         JPanel coinPanel = new JPanel();
         JLabel currentCoin = new JLabel( "BTC");
         JLabel currentPeriod = new JLabel( "1 Month");
@@ -85,7 +82,7 @@ public class CryptoVisualizer {
             timeButton.addActionListener( new TimeListener(s) );
             coinPanel.add(timeButton, BorderLayout.LINE_START);
         }
-        frame.add( xy1, BorderLayout.NORTH );
+        
         frame.add( coinPanel, BorderLayout.SOUTH );
     }
 
@@ -116,7 +113,7 @@ public class CryptoVisualizer {
         String points = timePeriodToUnitsPoints.get(period).points;
         URL url = new URL("https://min-api.cryptocompare.com/data/index/histo/underlying/"
                 + timeunit + "?market=CCMVDA&base=" + coin + "&quote=USD&limit=" + points
-                + "&api_key=YourApiKeyGoesHere");
+                + "&api_key=d217db56f263194685d0ad74d721d7925ed587b6067b46e6ca56ee889d286286");
 
         URLConnection connection = url.openConnection();
         BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
