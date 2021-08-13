@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -141,6 +142,9 @@ public class CryptoVisualizer {
         chart.addSeries(coin + " Price", timestamp, price );
         displayMaxPrice( max, timestamp.get( max.index ) );
         displayMinPrice( min, timestamp.get( min.index ) );
+        displayOpenPrice( price.getFirst(), timestamp.getFirst() );
+        displayClosePrice( price.getLast(), timestamp.getLast() );
+        displayPercentChange(price.getFirst(), price.getLast(), timestamp.getFirst(), timestamp.getLast() );
         wrapped.repaintChart();
     }
 
@@ -186,6 +190,34 @@ public class CryptoVisualizer {
         minPrice.add( pair.value );
         timestamps.add( stamp );
         chart.addSeries("Min Price For Period: " + pair.value, timestamps, minPrice );
+    }
+
+    public static void displayOpenPrice( double open, Date stamp  ){
+        LinkedList<Double> openPrice = new LinkedList<>();
+        LinkedList<Date> timestamps = new LinkedList<>();
+        openPrice.add( open );
+        timestamps.add( stamp );
+        chart.addSeries("Open Price For Period: " + open, timestamps, openPrice );
+    }
+
+    public static void displayClosePrice( double close, Date stamp  ){
+        LinkedList<Double> closePrice = new LinkedList<>();
+        LinkedList<Date> timestamps = new LinkedList<>();
+        closePrice.add( close );
+        timestamps.add( stamp );
+        chart.addSeries("Close Price For Period: " + close, timestamps, closePrice );
+    }
+
+    public static void displayPercentChange( double open, double close, Date openStamp, Date closeStamp  ){
+        LinkedList<Double> edgePrice = new LinkedList<>();
+        LinkedList<Date> timestamps = new LinkedList<>();
+        double percentChange = (( close / open ) - 1 ) * 100;
+        DecimalFormat df = new DecimalFormat("#.##");
+        edgePrice.add( open );
+        edgePrice.add( close );
+        timestamps.add( openStamp );
+        timestamps.add( closeStamp );
+        chart.addSeries("Percent Change For Period: " + df.format(percentChange), timestamps, edgePrice );
     }
 
     /**
