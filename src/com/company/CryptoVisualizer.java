@@ -113,7 +113,7 @@ public class CryptoVisualizer {
         String points = timePeriodToUnitsPoints.get(period).points;
         URL url = new URL("https://min-api.cryptocompare.com/data/index/histo/underlying/"
                 + timeunit + "?market=CCMVDA&base=" + coin + "&quote=USD&limit=" + points
-                + "&api_key=YourAPIKeyGoesHere");
+                + "&api_key=d217db56f263194685d0ad74d721d7925ed587b6067b46e6ca56ee889d286286");
 
         URLConnection connection = url.openConnection();
         BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
