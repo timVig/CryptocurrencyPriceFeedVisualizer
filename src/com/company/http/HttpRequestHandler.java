@@ -6,10 +6,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,8 +19,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-@Configuration
+@Component
+@PropertySource("classpath:application.properties")
 public class HttpRequestHandler {
+
+    @Value("${crypto-comp.token}")
+    private String apiKey;
+
     private HashMap<String, StringPair> timePeriodToUnitsPoints;
     private  final String[] timeunits = { "day", "day", "day", "hour", "hour", "minute" };
     private  final String[] pointsToPoll = { "365", "90", "30", "168", "24", "60" };
@@ -34,13 +38,11 @@ public class HttpRequestHandler {
     }
 
     public PriceTimestampPairs makeURICall(String coin, String period ) throws IOException, ParseException {
-        System.out.println(period);
-        System.out.println(timePeriodToUnitsPoints);
         String timeunit = timePeriodToUnitsPoints.get(period).getUnit();
         String points = timePeriodToUnitsPoints.get(period).getPoints();
         URL url = new URL("https://min-api.cryptocompare.com/data/index/histo/underlying/"
                 + timeunit + "?market=CCMVDA&base=" + coin + "&quote=USD&limit=" + points
-                + "&api_key=d217db56f263194685d0ad74d721d7925ed587b6067b46e6ca56ee889d286286");
+                + "&api_key=" + apiKey );
 
         URLConnection connection = url.openConnection();
         BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
@@ -63,7 +65,6 @@ public class HttpRequestHandler {
 
         url = new URL( "https://min-api.cryptocompare.com/data/price?fsym=" + coin + "&tsyms=USD" );
         addTodaysPrice( url, parse, timestamp, price );
-
         return new PriceTimestampPairs( timestamp, price );
     }
 

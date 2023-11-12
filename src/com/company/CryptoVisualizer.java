@@ -2,6 +2,7 @@ package com.company;
 
 import com.company.http.HttpRequestHandler;
 import com.company.ui.ChartUIDisplay;
+import com.company.util.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -22,7 +23,12 @@ public class CryptoVisualizer {
      * The main method which start the cryptovisualizer.
      */
     public static void main(String[] args) {
-        ApplicationContext context = new AnnotationConfigApplicationContext(HttpRequestHandler.class, ChartUIDisplay.class);
+        ApplicationContext context = new AnnotationConfigApplicationContext(
+                HttpRequestHandler.class,
+                ChartUIDisplay.class,
+                ListUtils.class
+        );
+
         chartUIDisplay = context.getBean(ChartUIDisplay.class);
         chartUIDisplay.UI_main();
     }
