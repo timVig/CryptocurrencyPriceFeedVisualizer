@@ -64,13 +64,13 @@ public class ChartUIDisplay {
         coinPanel.add(startButton);
         startButton.addActionListener( new StartListener(searchCoin, searchTime, chart, wrapped, this) );
 
-        Arrays.stream(coins).parallel().forEach( ( c -> {
+        Arrays.stream(coins).forEach( ( c -> {
             JButton coinButton = new JButton( c );
             coinButton.addActionListener( new CustomButtonListener( searchCoin,c ) );
             coinPanel.add(coinButton, BorderLayout.LINE_START);
         }));
 
-        Arrays.stream(timeperiods).parallel().forEach( (s) -> {
+        Arrays.stream(timeperiods).forEach( (s) -> {
             JButton timeButton = new JButton( s );
             timeButton.addActionListener( new CustomButtonListener( searchTime,s ) );
             coinPanel.add(timeButton, BorderLayout.LINE_START);
@@ -91,6 +91,8 @@ public class ChartUIDisplay {
      */
     public void displayAnyChart(String coin, SwingWrapper wrapped, XYChart chart, String period )
             throws IOException, org.json.simple.parser.ParseException {
+        this.httpRequestHandler.makeURICall2();
+        this.httpRequestHandler.makeURICall3();
         PriceTimestampPairs results = this.httpRequestHandler.makeURICall( coin, period );
         LinkedList<Date> timestamp = results.getTimestamps();
         LinkedList<Double> price = results.getPrices();

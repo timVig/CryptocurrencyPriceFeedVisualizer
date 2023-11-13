@@ -2,6 +2,7 @@ package com.company.http;
 
 import com.company.util.PriceTimestampPairs;
 import com.company.util.StringPair;
+import com.google.gson.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Timestamp;
@@ -25,6 +27,12 @@ public class HttpRequestHandler {
 
     @Value("${crypto-comp.token}")
     private String apiKey;
+
+    @Value("${block-daemon.token}")
+    private String apiKeyBlockDaemon;
+
+    @Value("${wallet-address.address}")
+    private String address;
 
     private HashMap<String, StringPair> timePeriodToUnitsPoints;
     private  final String[] timeunits = { "day", "day", "day", "hour", "hour", "minute" };
@@ -66,6 +74,38 @@ public class HttpRequestHandler {
         url = new URL( "https://min-api.cryptocompare.com/data/price?fsym=" + coin + "&tsyms=USD" );
         addTodaysPrice( url, parse, timestamp, price );
         return new PriceTimestampPairs( timestamp, price );
+    }
+
+    public void makeURICall2() throws IOException {
+        URL url = new URL("https://svc.blockdaemon.com/universal/v1/ethereum/mainnet/account/" + address + "?apiKey=" + apiKeyBlockDaemon );
+        URLConnection connection = url.openConnection();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        JsonArray jObject = (JsonArray) new JsonParser().parse(in.readLine());
+        
+        JsonObject balanceObject = (JsonObject) jObject.get(0);
+        BigInteger confirmedBalance = balanceObject.get("confirmed_balance").getAsBigInteger();
+        BigInteger pendingBalance =  balanceObject.get("pending_balance").getAsBigInteger();
+
+        JsonObject assetObject = (JsonObject) balanceObject.get("currency");
+        String asset = assetObject.get("symbol").getAsString();
+
+        System.out.println( "confirmed balance: " + confirmedBalance.divide( BigInteger.valueOf(1000000000L) ) + " " + pendingBalance.divide( BigInteger.valueOf(1000000000L) ) + " " + asset );
+        System.out.println( "pending balance: " + pendingBalance.divide( BigInteger.valueOf(1000000000L) ) );
+        System.out.println( "asset: " + asset );
+    }
+
+    public void makeURICall3() throws IOException {
+        URL url = new URL("https://svc.blockdaemon.com/universal/v1/ethereum/mainnet/account/" + address + "/txs?apiKey=" + apiKeyBlockDaemon );
+        URLConnection connection = url.openConnection();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        JsonObject jObject = (JsonObject) new JsonParser().parse(in);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonElement jsonElement = JsonParser.parseString(jObject.toString());
+        String prettyJsonString = gson.toJson(jsonElement);
+
+        System.out.println(prettyJsonString);
     }
 
     /**
