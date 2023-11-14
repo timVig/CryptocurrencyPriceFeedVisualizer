@@ -8,6 +8,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
+import java.io.IOException;
+
 /**
  * This program displays the price feeds of popular cryptocurrencies on popular time intervals.
  * Currently contains Bitcoin, Ethereum, Litecoin, and Ripple (XRP).
@@ -22,7 +24,7 @@ public class CryptoVisualizer {
     /**
      * The main method which start the cryptovisualizer.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         ApplicationContext context = new AnnotationConfigApplicationContext(
                 HttpRequestHandler.class,
                 ChartUIDisplay.class,

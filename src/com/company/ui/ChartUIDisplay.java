@@ -34,13 +34,13 @@ public class ChartUIDisplay {
         this.httpRequestHandler = h1;
     }
 
-    public void UI_main() {
+    public void UI_main() throws IOException {
         chart = new XYChartBuilder().width( 1000 ).height( 800 ).title("CryptoTracker").
                 xAxisTitle("Date").yAxisTitle("Price").build();
         wrapped = new SwingWrapper<>(chart);
         JFrame frame = wrapped.displayChart();
         frame.setLayout( new BorderLayout() );
-        frame.setSize( chart.getWidth(), chart.getHeight() + 75 );
+        frame.setSize( chart.getWidth() * 2, chart.getHeight() + 75 );
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         startUI( frame );
         frame.setVisible( true );
@@ -50,10 +50,13 @@ public class ChartUIDisplay {
      * This method handles starting the UI, setting the layout, and linking listeners to buttons.
      * @param frame -> the frame to create UI on.
      */
-    public void startUI( JFrame frame ){
+    public void startUI( JFrame frame ) throws IOException {
         JPanel coinPanel = new JPanel();
         JLabel currentCoin = new JLabel( "BTC");
         JLabel currentPeriod = new JLabel( "1 Month");
+
+
+
         JButton startButton = new JButton("Search");
         JLabel searchCoin, searchTime;
 
@@ -76,7 +79,19 @@ public class ChartUIDisplay {
             coinPanel.add(timeButton, BorderLayout.LINE_START);
         } );
 
+        DefaultListModel listModel = new DefaultListModel();
+        List<String> txnsApi = this.httpRequestHandler.makeURICall3();
+        JList transactions = new JList(listModel);
+        for( String s: txnsApi ){
+            listModel.addElement(s);
+        }
+        JScrollPane txnPanel = new JScrollPane(transactions);
+        txnPanel.setViewportView( transactions );
+        txnPanel.setSize(1000, 800);
+        frame.add( txnPanel, BorderLayout.EAST );
+
         frame.add( coinPanel, BorderLayout.SOUTH );
+
     }
 
     /**
@@ -89,7 +104,7 @@ public class ChartUIDisplay {
      * @param chart -> the chart itself
      * @param period -> the time period we want data from
      */
-    public void displayAnyChart(String coin, SwingWrapper wrapped, XYChart chart, String period )
+    public void displayAnyChart(String coin, SwingWrapper wrapped, XYChart chart, String period)
             throws IOException, org.json.simple.parser.ParseException {
         this.httpRequestHandler.makeURICall2();
         this.httpRequestHandler.makeURICall3();
@@ -107,6 +122,7 @@ public class ChartUIDisplay {
         displayOpenOrClosePrice( price.getFirst(), timestamp.getFirst(), "OPEN" );
         displayOpenOrClosePrice( price.getLast(), timestamp.getLast(), "CLOSE" );
         displayPercentChange(price.getFirst(), price.getLast(), timestamp.getFirst(), timestamp.getLast() );
+
         wrapped.repaintChart();
     }
     
