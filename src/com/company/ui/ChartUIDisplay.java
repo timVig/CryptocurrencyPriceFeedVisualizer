@@ -40,7 +40,7 @@ public class ChartUIDisplay {
         wrapped = new SwingWrapper<>(chart);
         JFrame frame = wrapped.displayChart();
         frame.setLayout( new BorderLayout() );
-        frame.setSize( chart.getWidth() + 700, chart.getHeight() + 75 );
+        frame.setSize( chart.getWidth() + 750, chart.getHeight() + 75 );
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         startUI( frame );
         frame.setVisible( true );

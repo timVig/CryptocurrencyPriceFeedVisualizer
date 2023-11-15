@@ -105,51 +105,51 @@ public class HttpRequestHandler {
         JsonObject jObject = (JsonObject) new JsonParser().parse(in);
         JsonArray dataObj = (JsonArray) jObject.get("data");
         
-        StringBuilder blockSb = new StringBuilder();
+
 
         System.out.println( "-----------------------------------------------------" );
         for( JsonElement element : dataObj.asList() ){
 
-            blockSb.append( "id:" + element.getAsJsonObject().get("id") );
-            blockSb.append( "block_id:" + element.getAsJsonObject().get("block_id") );
-            blockSb.append( "date:" + element.getAsJsonObject().get("date") );
-            blockSb.append( "status:" + element.getAsJsonObject().get("status") );
-            blockSb.append( "block_number:" + element.getAsJsonObject().get("block_number") );
-            blockSb.append( "confirmations:" + element.getAsJsonObject().get("confirmations") );
+            StringBuilder eventSb = new StringBuilder();
+            eventSb.append("<html><pre>");
+            eventSb.append("BLOCK DATA:");
+            eventSb.append( "<br><br>\tid:" + element.getAsJsonObject().get("id") );
+            eventSb.append( "<br>\tblock_id:" + element.getAsJsonObject().get("block_id") );
+            eventSb.append( "<br>\tdate:" + element.getAsJsonObject().get("date") );
+            eventSb.append( "<br>\tstatus:" + element.getAsJsonObject().get("status") );
+            eventSb.append( "<br>\tblock_number:" + element.getAsJsonObject().get("block_number") );
+            eventSb.append( "<br>\tconfirmations:" + element.getAsJsonObject().get("confirmations") )
+                    .append("<br><br>TRANSACTIONS:<br>");
 
             JsonElement events = element
                     .getAsJsonObject()
                     .get("events");
 
-            StringBuilder eventSb;
-
             for( JsonElement event: events.getAsJsonArray() ){
-                eventSb = new StringBuilder();
-                eventSb.append("<html>").append("event id:")
+                eventSb.append("\tevent id:")
                         .append(event.getAsJsonObject().get("id"));
 
-                eventSb.append("<br>").append("transaction id:")
+                eventSb.append("<br>").append("\ttransaction id:")
                         .append(event.getAsJsonObject().get("transaction_id"));
 
-                eventSb.append("<br>").append("type:")
+                eventSb.append("<br>").append("\ttype:")
                         .append(event.getAsJsonObject().get("type"));
 
-                eventSb.append("<br>").append("source:")
+                eventSb.append("<br>").append("\tsource:")
                         .append(event.getAsJsonObject().get("source"));
 
-                eventSb.append("<br>").append("date:")
+                eventSb.append("<br>").append("\tdate:")
                         .append(new java.util.Date( event.getAsJsonObject().get("date").getAsLong() * 1000));
 
-                eventSb.append("<br>").append("amount:")
+                eventSb.append("<br>").append("\tamount:")
                         .append(event.getAsJsonObject().get("amount").getAsBigInteger().divide(BigInteger.valueOf(1000000000L))
-                        ).append(" ").append(event.getAsJsonObject().get("denomination").getAsString())
-                        .append("<br>------------------------------------------------------------------------------------" +
-                                "-------------------------------------------------------------</html>");
-                returnList.add(eventSb.toString());
+                        ).append(" ").append(event.getAsJsonObject().get("denomination").getAsString()).append("        ")
+                        .append("<br><br>");
             }
-            System.out.println( "-----------------------------------------------------" );
+
+            eventSb.append("-----------------------------------------------------------------------------------------------------</pre></html>");
+            returnList.add(eventSb.toString());
         }
-        System.out.println( "-----------------------------------------------------" );
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonElement jsonElement = JsonParser.parseString(jObject.toString());
