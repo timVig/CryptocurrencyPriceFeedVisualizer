@@ -40,7 +40,7 @@ public class ChartUIDisplay {
         wrapped = new SwingWrapper<>(chart);
         JFrame frame = wrapped.displayChart();
         frame.setLayout( new BorderLayout() );
-        frame.setSize( chart.getWidth() * 2, chart.getHeight() + 75 );
+        frame.setSize( chart.getWidth() + 700, chart.getHeight() + 75 );
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         startUI( frame );
         frame.setVisible( true );
@@ -86,6 +86,7 @@ public class ChartUIDisplay {
             listModel.addElement(s);
         }
         JScrollPane txnPanel = new JScrollPane(transactions);
+        ( (DefaultListCellRenderer) transactions.getCellRenderer() ).setHorizontalAlignment( SwingConstants.LEFT );
         txnPanel.setViewportView( transactions );
         txnPanel.setSize(1000, 800);
         frame.add( txnPanel, BorderLayout.EAST );

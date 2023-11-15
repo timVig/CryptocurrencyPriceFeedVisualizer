@@ -91,6 +91,7 @@ public class HttpRequestHandler {
         System.out.println( "confirmed balance: " + confirmedBalance.divide( BigInteger.valueOf(1000000000L) ) );
         System.out.println( "pending balance: " + pendingBalance.divide( BigInteger.valueOf(1000000000L) ) );
         System.out.println( "asset: " + asset );
+        System.out.println( jObject );
 
         //TODO: Get the symbols for the portfolio to display it
     }
@@ -108,12 +109,13 @@ public class HttpRequestHandler {
 
         System.out.println( "-----------------------------------------------------" );
         for( JsonElement element : dataObj.asList() ){
-            System.out.println( "id:" + element.getAsJsonObject().get("id") );
-            System.out.println( "block_id:" + element.getAsJsonObject().get("block_id") );
-            System.out.println( "date:" + element.getAsJsonObject().get("date") );
-            System.out.println( "status:" + element.getAsJsonObject().get("status") );
-            System.out.println( "block_number:" + element.getAsJsonObject().get("block_number") );
-            System.out.println( "confirmations:" + element.getAsJsonObject().get("confirmations") );
+
+            blockSb.append( "id:" + element.getAsJsonObject().get("id") );
+            blockSb.append( "block_id:" + element.getAsJsonObject().get("block_id") );
+            blockSb.append( "date:" + element.getAsJsonObject().get("date") );
+            blockSb.append( "status:" + element.getAsJsonObject().get("status") );
+            blockSb.append( "block_number:" + element.getAsJsonObject().get("block_number") );
+            blockSb.append( "confirmations:" + element.getAsJsonObject().get("confirmations") );
 
             JsonElement events = element
                     .getAsJsonObject()
@@ -123,13 +125,26 @@ public class HttpRequestHandler {
 
             for( JsonElement event: events.getAsJsonArray() ){
                 eventSb = new StringBuilder();
-                eventSb.append(System.getProperty("line.separator")).append("event.id:").append(event.getAsJsonObject().get("id"));
-                eventSb.append(System.getProperty("line.separator")).append("event.transaction_id:").append(event.getAsJsonObject().get("transaction_id"));
-                eventSb.append(System.getProperty("line.separator")).append("event.type:").append(event.getAsJsonObject().get("type"));
-                eventSb.append(System.getProperty("line.separator")).append("event.denomination:").append(event.getAsJsonObject().get("denomination"));
-                eventSb.append(System.getProperty("line.separator")).append("event.source:").append(event.getAsJsonObject().get("source"));
-                eventSb.append(System.getProperty("line.separator")).append("event.date:").append(event.getAsJsonObject().get("date"));
-                eventSb.append(System.getProperty("line.separator")).append("event.amount:").append(event.getAsJsonObject().get("amount").getAsBigInteger().divide(BigInteger.valueOf(1000000000L)));
+                eventSb.append("<html>").append("event id:")
+                        .append(event.getAsJsonObject().get("id"));
+
+                eventSb.append("<br>").append("transaction id:")
+                        .append(event.getAsJsonObject().get("transaction_id"));
+
+                eventSb.append("<br>").append("type:")
+                        .append(event.getAsJsonObject().get("type"));
+
+                eventSb.append("<br>").append("source:")
+                        .append(event.getAsJsonObject().get("source"));
+
+                eventSb.append("<br>").append("date:")
+                        .append(new java.util.Date( event.getAsJsonObject().get("date").getAsLong() * 1000));
+
+                eventSb.append("<br>").append("amount:")
+                        .append(event.getAsJsonObject().get("amount").getAsBigInteger().divide(BigInteger.valueOf(1000000000L))
+                        ).append(" ").append(event.getAsJsonObject().get("denomination").getAsString())
+                        .append("<br>------------------------------------------------------------------------------------" +
+                                "-------------------------------------------------------------</html>");
                 returnList.add(eventSb.toString());
             }
             System.out.println( "-----------------------------------------------------" );
@@ -139,7 +154,7 @@ public class HttpRequestHandler {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonElement jsonElement = JsonParser.parseString(jObject.toString());
         String prettyJsonString = gson.toJson(jsonElement);
-        System.out.println(returnList);
+        //System.out.println(returnList);
         return returnList;
         //TODO: extract transaction data, no need to derive the securities
     }
